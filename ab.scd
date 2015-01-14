@@ -36,26 +36,25 @@ s.doWhenBooted({
 	}).add;
 
 	SynthDef(\convo, {
-		arg b1, in=1, mix=0.33, room=0.5, damp=0.5, mul=1.0, add=0, fs=512, hop=100, dur=3.0, rate=30;
+		arg b1, out=0,in=1, mix=0.33, room=0.5, damp=0.5, mul=1.0, add=0, fs=512, hop=100, dur=3.0, rate=30, amp=1.0, freq=1.0;
 		var input, kernel, kernelV, convo, scratcher, counter;
 		kernel = AudioIn.ar(in);
 		kernelV = FreeVerb.ar(kernel, mix, room, damp, mul,add);
 		//counter = Stepper.ar(kernelV,min: 0.0, max: 1.0, step: 0.0001);
 		counter = Stepper.ar(kernelV,0,0,BufFrames.ir(b1),hop,-1); 
 
-		scratcher = BufRd.ar(1, b1, Latch.ar(counter,Impulse.ar(rate))+LFSaw.ar(1.0/dur).range(0,dur*44100));
+		scratcher = BufRd.ar(1, b1, Latch.ar(counter,Impulse.ar(rate))+LFSaw.ar(1.0*freq/dur).range(0,dur*44100));
 
 		convo = Convolution.ar(DelayN.ar(scratcher, delayTime: 0.2), kernelV, fs, 0.5);
-		Out.ar(0, [convo + scratcher, counter]);	
+		Out.ar(out, amp * (convo + scratcher));	
 	}).add();
 
 	s.sync;
 
-	~convo = Synth.new(\convo,[\b1,~birdb.bufnum,\b2,~harshb.bufnum]);
-	~convo.set(\mix, 1.0);
-	~convo.set(\damp, 0.1);
-	~convo.set(\room, 0.8);
-	~convo.autogui;
+	~c1 = Synth.new(\convo,[\b1,~birdb.bufnum, \dur,3.3,\in,1,\out,0,\fs,128,\rate,10,\hop,10]);
+	~c2 = Synth.new(\convo,[\b2,~harshb.bufnum,\dur,0.5,\in,2,\out,1,\fs,512,\rate,10,\hop,100]);
+	~c1.autogui;
+	~c2.autogui;
 
 });
 
