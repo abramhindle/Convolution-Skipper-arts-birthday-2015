@@ -36,26 +36,22 @@ s.doWhenBooted({
 	}).add;
 
 	SynthDef(\convo, {
-		arg b, mix=0.33, room=0.5, damp=0.5, mul=1.0, add=0, fs=512, hop=100, dur=3.0, rate=30;
+		arg b1, in=1, mix=0.33, room=0.5, damp=0.5, mul=1.0, add=0, fs=512, hop=100, dur=3.0, rate=30;
 		var input, kernel, kernelV, convo, scratcher, counter;
-		input=AudioIn.ar(2);	
-		kernel = AudioIn.ar(1);
+		kernel = AudioIn.ar(in);
 		kernelV = FreeVerb.ar(kernel, mix, room, damp, mul,add);
 		//counter = Stepper.ar(kernelV,min: 0.0, max: 1.0, step: 0.0001);
-		counter = Stepper.ar(Amplitude.ar(kernelV),0,0,BufFrames.ir(b),hop,-1); //,min: 0.0, max: 1.0, step: 0.0001);
-		//scratcher = BufRd.ar(1, b, LFSaw.ar(1.0*BufDur.ir(b).reciprocal).range(0, BufFrames.ir(b)));
-		// only moved by sound
-		//scratcher = BufRd.ar(1, b, counter.range(0, BufFrames.ir(b)));
-		// repeats
-		scratcher = BufRd.ar(1, b, Latch.ar(counter,Impulse.ar(rate))+LFSaw.ar(1.0/dur).range(0,dur*44100));
-		Out.ar(16, kernelV);
+		counter = Stepper.ar(kernelV,0,0,BufFrames.ir(b1),hop,-1); 
+
+		scratcher = BufRd.ar(1, b1, Latch.ar(counter,Impulse.ar(rate))+LFSaw.ar(1.0/dur).range(0,dur*44100));
+
 		convo = Convolution.ar(DelayN.ar(scratcher, delayTime: 0.2), kernelV, fs, 0.5);
 		Out.ar(0, [convo + scratcher, counter]);	
 	}).add();
 
 	s.sync;
 
-	~convo = Synth.new(\convo,[\b,~harshb.bufnum]);
+	~convo = Synth.new(\convo,[\b1,~birdb.bufnum,\b2,~harshb.bufnum]);
 	~convo.set(\mix, 1.0);
 	~convo.set(\damp, 0.1);
 	~convo.set(\room, 0.8);
