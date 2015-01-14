@@ -43,9 +43,13 @@ s.doWhenBooted({
 		//counter = Stepper.ar(kernelV,min: 0.0, max: 1.0, step: 0.0001);
 		counter = Stepper.ar(kernelV,0,0,BufFrames.ir(b1),hop,-1); 
 
-		scratcher = BufRd.ar(1, b1, Latch.ar(counter,Impulse.ar(rate))+LFSaw.ar(1.0*freq/dur).range(0,dur*44100));
+		//scratcher = BufRd.ar(1, b1, Latch.ar(counter,Impulse.ar(rate))+LFSaw.ar(1.0*freq/dur).range(0,dur*44100));
+        scratcher = GrainBuf.ar(numChannels:1, trigger:Impulse.kr(rate), dur:dur, sndbuf: b1, rate:freq,
+			pos:(counter+LFSaw.ar(1.0*freq/dur).range(0,dur*44100))/BufFrames.ir(b1), 
+			//pos:(Latch.ar(counter,Impulse.ar(rate))+LFSaw.ar(1.0*freq/dur).range(0,dur*44100))/BufFrames.ir(b1), 
+			maxGrains:50);
 
-		convo = Convolution.ar(DelayN.ar(scratcher, delayTime: 0.2), kernelV, fs, 0.5);
+		convo = Convolution.ar(DelayN.ar(scratcher, delaytime: 0.2), kernelV, fs, 0.5);
 		Out.ar(out, amp * (convo + scratcher));	
 	}).add();
 
@@ -87,3 +91,40 @@ SynthDef("help-Stepper",{ arg out=0;
 	    Out.ar(0, kernelV)
 }.play;
 s.scope;
+
+
+c = Bus.control(s, numChannels: 1);
+v = {Out.kr(c, Amplitude.kr(SoundIn.ar(0))); }.play;
+
+(
+    var index = 0;
+    ~arr=0!10;
+    w = Window.new("gui", Rect(0, 0, 1024, 768)).front;
+    w.drawFunc = {
+		~arr.do {|item,i|
+			Pen.use {
+				Pen.color = Color.grey(item, 0.5);
+				Pen.addRect(
+					Rect(1024/10 * (index + i) % 1024, 0, 1024/10+2, 768);
+				);
+				Pen.fill;
+			};			
+		};
+		index = index + 1;
+    };
+    w.refresh;
+)
+
+r = Routine( {
+	var index = 0;
+	loop {
+		c.get({|v|
+			~arr[index % ~arr.size] = v;
+			index = index + 1;
+			AppClock.sched(0.0,{ w.refresh });
+		});
+		(1.0/30.0).wait;
+	}
+}).play;
+
+r.free;
