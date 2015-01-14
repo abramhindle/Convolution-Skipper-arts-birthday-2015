@@ -93,23 +93,43 @@ SynthDef("help-Stepper",{ arg out=0;
 s.scope;
 
 
-c = Bus.control(s, numChannels: 1);
-v = {Out.kr(c, Amplitude.kr(SoundIn.ar(0))); }.play;
+~c1 = Bus.control(s, numChannels: 1);
+~c2 = Bus.control(s, numChannels: 1);
+~v1 = {Out.kr(~c1, Amplitude.kr(SoundIn.ar(0))); }.play;
+~v2 = {Out.kr(~c2, Amplitude.kr(SoundIn.ar(1))); }.play;
 
 (
-    var index = 0;
-    ~arr=0!10;
+    var index = 0, n=50;
+    ~arr=0!n;
+    ~arr2=0!n;
+
     w = Window.new("gui", Rect(0, 0, 1024, 768)).front;
     w.drawFunc = {
 		~arr.do {|item,i|
 			Pen.use {
-				Pen.color = Color.grey(item, 0.5);
+				Pen.color = Color.red(if(item > 0.51, {item}, {0}), 1.0);
 				Pen.addRect(
-					Rect(1024/10 * (index + i) % 1024, 0, 1024/10+2, 768);
+					Rect(1024/n * (index + i) % 1024, 0, 1024/n+2, 768);
 				);
 				Pen.fill;
 			};			
 		};
+		~arr2.do {|item,i|
+			Pen.use {
+				if(item > 0.501, {
+					Pen.color = Color.blue(item, 1.0);
+
+					Pen.addRect(
+						Rect(0,768/n * (index + i) % 768, 1024,768/n/2+2);
+					);
+					//~arr.size.do {|j|
+					//Pen.addWedge((1024/10*j % 1024)@(768/10 * (index + i) % 768), 768/10, 0, 2pi/4.0);
+					//};
+					Pen.fill;
+				})
+			};			
+		};
+
 		index = index + 1;
     };
     w.refresh;
@@ -118,12 +138,15 @@ v = {Out.kr(c, Amplitude.kr(SoundIn.ar(0))); }.play;
 r = Routine( {
 	var index = 0;
 	loop {
-		c.get({|v|
-			~arr[index % ~arr.size] = v;
+		~c1.get({|v|			
+			~arr[index % ~arr.size] = v+0.5;
+		});
+		~c2.get({|v|
+			~arr2[index % ~arr2.size] = v+0.5;
 			index = index + 1;
 			AppClock.sched(0.0,{ w.refresh });
 		});
-		(1.0/30.0).wait;
+		(1.0/60.0).wait;
 	}
 }).play;
 
