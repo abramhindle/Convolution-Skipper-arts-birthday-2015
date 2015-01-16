@@ -9,17 +9,6 @@ s.freqscope;
 */
 
 
-SynthDef(\bbb, {
-	|b,x=0,y=0,xvel=0,yvel=0,out=0,accel=100,amp=0.5,rate=1.0|
-	Out.ar(out,
-		amp * Mix.ar(
-			BufRd.ar(1, b, LFSaw.ar(rate*(x/1000.0)*BufDur.ir(b).reciprocal).range(0, BufFrames.ir(b))),
-			BufRd.ar(1, b, LFSaw.ar(rate*(y/1000.0)*BufDur.ir(b).reciprocal).range(0, BufFrames.ir(b))),
-			BufRd.ar(1, b, LFSaw.ar(((yvel*xvel)/(50*50.0))*BufDur.ir(b).reciprocal).range(0, BufFrames.ir(b))),
-		))
-}).add();
-
-
 s.doWhenBooted({
 	~path = "~/projects/single-celled-doubt/";
 	~path + "what";
@@ -60,98 +49,76 @@ s.doWhenBooted({
 	~c1.autogui;
 	~c2.autogui;
 
+	s.sync;
+
+	~cb1 = Bus.control(s, numChannels: 1);
+	~cb2 = Bus.control(s, numChannels: 1);
+	~v1 = {Out.kr(~cb1, Amplitude.kr(SoundIn.ar(0))); }.play;
+	~v2 = {Out.kr(~cb2, Amplitude.kr(SoundIn.ar(1))); }.play;
+
+
+	~windowmaker = {
+		var index = 0, n=16, width=1280,height=800,bright=0.5;
+		~arr=0!n;
+		~arr2=0!n;
+		
+		w = Window.new("gui", Rect(0, 0, width, height)).front;
+		w.drawFunc = {
+      		~arr.do {|item,i|
+      			Pen.use {
+      				//Pen.rotate(0.2pi);
+      				Pen.color = Color.red(if(item > 0.01, {item+bright}, {0}), 1.0);
+      				Pen.addRect(
+      					Rect(width/n * (index + i) % width, 0, width/n+2, height);
+      				);
+      				Pen.fill;
+      			};			
+				
+      		};
+      		~arr2.do {|item,i|
+      			Pen.use {
+      				Pen.translate(width/4,-1*height*3/2);
+      				Pen.scale(2.5,2.5);
+      				Pen.rotate(0.2pi);
+      				if(item > 0.01, {
+      					Pen.color = Color.blue(item+bright, 1.0);
+						
+      					Pen.addRect(
+      						Rect(0,height/n * (index + i) % height, width,height/n/2+2);
+      					);
+      					//~arr.size.do {|j|
+      					//Pen.addWedge((width/10*j % width)@(height/10 * (index + i) % height), height/10, 0, 2pi/4.0);
+      					//};
+      					Pen.fill;
+      				})
+      			};			
+      		};
+      		index = index + 1;
+		};
+		w.refresh;
+		~w = w;
+	};
+
+	~windowmaker.();
+
+	r = Routine( {
+      	var index = 0;
+      	loop {
+      		~cb1.get({|v|			
+      			~arr[index % ~arr.size] = 3*v;
+      		});
+      		~cb2.get({|v|
+      			~arr2[index % ~arr2.size] = 3*v;
+      			index = index + 1;
+      			AppClock.sched(0.0,{ w.refresh });
+      		});
+      		(1.0/60.0).wait;
+      	}
+	}).play;
+      
+	
+	
 });
 
-{ Out.ar(4,AudioIn.ar(1).scope) }.play
-{ Out.ar(4,AudioIn.ar(2).scope) }.play
-{ Out.ar(4,Bus.audio(s,16).scope) }.play
-
-Bus.new(rate: 'audio', index: 16, numChannels: 2, s).scope
-
-b= ~happyb;
-r = {
-	Out.ar(0, BufRd.ar(1, b, 10*44100 + LFSaw.ar(1.0/3.0).range(0,3.0*44100)))
-}.play;
-SynthDef("help-Stepper",{ arg out=0;
-    Out.ar(out,
-        SinOsc.ar(
-            Stepper.kr(Impulse.kr(10), 0, 1, 32, -3) * 100,
-            0, 0.05
-        )
-    )
-}).play;
 
 
-{
-		arg b, mix=0.33, room=0.5, damp=0.5, mul=1.0, add=0, fs=512, hop=100, dur=3.0, rate=30;
-		var input, kernel, kernelV, convo, scratcher, counter;
-		input=AudioIn.ar(2);	
-		kernel = AudioIn.ar(1);
-	    kernelV = FreeVerb.ar(kernel, mix, room, damp, mul,add);
-	    Out.ar(0, kernelV)
-}.play;
-s.scope;
-
-
-~c1 = Bus.control(s, numChannels: 1);
-~c2 = Bus.control(s, numChannels: 1);
-~v1 = {Out.kr(~c1, Amplitude.kr(SoundIn.ar(0))); }.play;
-~v2 = {Out.kr(~c2, Amplitude.kr(SoundIn.ar(1))); }.play;
-
-(
-    var index = 0, n=20;
-    ~arr=0!n;
-    ~arr2=0!n;
-
-    w = Window.new("gui", Rect(0, 0, 1024, 768)).front;
-    w.drawFunc = {
-		~arr.do {|item,i|
-			Pen.use {
-				//Pen.rotate(0.2pi);
-				Pen.color = Color.red(if(item > 0.01, {item+0.3}, {0}), 1.0);
-				Pen.addRect(
-					Rect(1024/n * (index + i) % 1024, 0, 1024/n+2, 768);
-				);
-				Pen.fill;
-			};			
-
-		};
-		~arr2.do {|item,i|
-			Pen.use {
-				Pen.translate(1024/4,-768*3/2);
-				Pen.scale(2.5,2.5);
-				Pen.rotate(0.2pi);
-				if(item > 0.01, {
-					Pen.color = Color.blue(item+0.3, 1.0);
-
-					Pen.addRect(
-						Rect(0,768/n * (index + i) % 768, 1024,768/n/2+2);
-					);
-					//~arr.size.do {|j|
-					//Pen.addWedge((1024/10*j % 1024)@(768/10 * (index + i) % 768), 768/10, 0, 2pi/4.0);
-					//};
-					Pen.fill;
-				})
-			};			
-		};
-		index = index + 1;
-    };
-    w.refresh;
-)
-
-r = Routine( {
-	var index = 0;
-	loop {
-		~c1.get({|v|			
-			~arr[index % ~arr.size] = 3*v;
-		});
-		~c2.get({|v|
-			~arr2[index % ~arr2.size] = 3*v;
-			index = index + 1;
-			AppClock.sched(0.0,{ w.refresh });
-		});
-		(1.0/30.0).wait;
-	}
-}).play;
-
-r.free;
