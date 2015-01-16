@@ -1,7 +1,7 @@
 s.boot;
 s.scope;
 ~path = "~/projects/single-celled-doubt/";
- ~path + "what";
+~path + "what";
 ~happyb = Buffer.read(s,"goldberg-aria-da-capo.wav");
 ~harshb = Buffer.read(s,"peergynt5.wav");
 ~excitedb = Buffer.read(s,"peergynt2.wav");

@@ -99,7 +99,7 @@ s.scope;
 ~v2 = {Out.kr(~c2, Amplitude.kr(SoundIn.ar(1))); }.play;
 
 (
-    var index = 0, n=50;
+    var index = 0, n=20;
     ~arr=0!n;
     ~arr2=0!n;
 
@@ -107,17 +107,22 @@ s.scope;
     w.drawFunc = {
 		~arr.do {|item,i|
 			Pen.use {
-				Pen.color = Color.red(if(item > 0.51, {item}, {0}), 1.0);
+				//Pen.rotate(0.2pi);
+				Pen.color = Color.red(if(item > 0.01, {item+0.3}, {0}), 1.0);
 				Pen.addRect(
 					Rect(1024/n * (index + i) % 1024, 0, 1024/n+2, 768);
 				);
 				Pen.fill;
 			};			
+
 		};
 		~arr2.do {|item,i|
 			Pen.use {
-				if(item > 0.501, {
-					Pen.color = Color.blue(item, 1.0);
+				Pen.translate(1024/4,-768*3/2);
+				Pen.scale(2.5,2.5);
+				Pen.rotate(0.2pi);
+				if(item > 0.01, {
+					Pen.color = Color.blue(item+0.3, 1.0);
 
 					Pen.addRect(
 						Rect(0,768/n * (index + i) % 768, 1024,768/n/2+2);
@@ -129,7 +134,6 @@ s.scope;
 				})
 			};			
 		};
-
 		index = index + 1;
     };
     w.refresh;
@@ -139,14 +143,14 @@ r = Routine( {
 	var index = 0;
 	loop {
 		~c1.get({|v|			
-			~arr[index % ~arr.size] = v+0.5;
+			~arr[index % ~arr.size] = 3*v;
 		});
 		~c2.get({|v|
-			~arr2[index % ~arr2.size] = v+0.5;
+			~arr2[index % ~arr2.size] = 3*v;
 			index = index + 1;
 			AppClock.sched(0.0,{ w.refresh });
 		});
-		(1.0/60.0).wait;
+		(1.0/30.0).wait;
 	}
 }).play;
 
