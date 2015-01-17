@@ -33,8 +33,8 @@ s.doWhenBooted({
 		counter = Stepper.ar(kernelV,0,0,BufFrames.ir(b1),hop,-1); 
 
 		//scratcher = BufRd.ar(1, b1, Latch.ar(counter,Impulse.ar(rate))+LFSaw.ar(1.0*freq/dur).range(0,dur*44100));
-        scratcher = GrainBuf.ar(numChannels:1, trigger:Impulse.kr(rate), dur:dur, sndbuf: b1, rate:freq,
-			pos:(counter+LFSaw.ar(1.0*freq/dur).range(0,dur*44100))/BufFrames.ir(b1), 
+        scratcher = GrainBuf.ar(numChannels:1, trigger:Impulse.kr(rate), dur:(0.001+dur), sndbuf: b1, rate:freq,
+			pos:(counter+LFSaw.ar(1.0*freq/(dur+0.001)).range(0,(0.001+dur*44100)))/BufFrames.ir(b1), 
 			//pos:(Latch.ar(counter,Impulse.ar(rate))+LFSaw.ar(1.0*freq/dur).range(0,dur*44100))/BufFrames.ir(b1), 
 			maxGrains:50);
 
@@ -44,10 +44,17 @@ s.doWhenBooted({
 
 	s.sync;
 
-	~c1 = Synth.new(\convo,[\b1,~birdb.bufnum, \dur,3.3,\in,1,\out,0,\fs,128,\rate,10,\hop,10]);
-	~c2 = Synth.new(\convo,[\b2,~harshb.bufnum,\dur,0.5,\in,2,\out,1,\fs,512,\rate,10,\hop,100]);
+	~c1 = Synth.new(\convo,[\b1,~birdb.bufnum,\hop, 10, \dur,3.3,\in,1,\out,0,\fs,128,\rate,10]);
+	~c2 = Synth.new(\convo,[\b1,~happyb.bufnum,\hop,11,\dur,0.5,\in,2,\out,1,\fs,512,\rate,4]);
+	~c3 = Synth.new(\convo,[\b1,~harshb.bufnum,\hop,12,\dur,0.5,\in,1,\out,1,\fs,512,\rate,5,\amp,0]);
+	~c4 = Synth.new(\convo,[\b1,~excitedb.bufnum,\hop,13,\dur,0.5,\in,2,\out,1,\fs,512,\rate,5,\amp,0]);
+
 	~c1.autogui;
 	~c2.autogui;
+	~c3.autogui;
+	~c4.autogui;
+
+
 
 	s.sync;
 
