@@ -46,7 +46,7 @@ s.doWhenBooted({
 
 	~c1 = Synth.new(\convo,[\b1,~birdb.bufnum,\hop, 10, \dur,3.3,\in,1,\out,0,\fs,128,\rate,10]);
 	~c2 = Synth.new(\convo,[\b1,~happyb.bufnum,\hop,11,\dur,0.5,\in,2,\out,1,\fs,512,\rate,4]);
-	~c3 = Synth.new(\convo,[\b1,~harshb.bufnum,\hop,12,\dur,0.5,\in,1,\out,1,\fs,512,\rate,5,\amp,0]);
+	~c3 = Synth.new(\convo,[\b1,~sadb.bufnum,\hop,12,\dur,0.5,\in,1,\out,1,\fs,512,\rate,5,\amp,0]);
 	~c4 = Synth.new(\convo,[\b1,~excitedb.bufnum,\hop,13,\dur,0.5,\in,2,\out,1,\fs,512,\rate,5,\amp,0]);
 
 	~c1.autogui;
