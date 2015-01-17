@@ -1,5 +1,0 @@
-s.options.numBuffers = 16000;
-s.boot;
-s.scope;
-s.freqscope;
-
