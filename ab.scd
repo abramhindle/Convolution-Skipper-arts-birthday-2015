@@ -42,7 +42,7 @@ s.doWhenBooted({
 
 	~c1 = Synth.new(\convo,[\b1,~birdb.bufnum,\hop, 10, \dur,3.3,\in,1,\out,0,\fs,128,\rate,10]);
 	~c2 = Synth.new(\convo,[\b1,~happyb.bufnum,\hop,11,\dur,0.5,\in,2,\out,1,\fs,512,\rate,4]);
-	~c3 = Synth.new(\convo,[\b1,~sadb.bufnum,\hop,12,\dur,0.5,\in,1,\out,1,\fs,512,\rate,5,\amp,0]);
+	~c3 = Synth.new(\convo,[\b1,~sadb.bufnum,\hop,12,\dur,0.5,\in,1,\out,0,\fs,512,\rate,5,\amp,0]);
 	~c4 = Synth.new(\convo,[\b1,~excitedb.bufnum,\hop,13,\dur,0.5,\in,2,\out,1,\fs,512,\rate,5,\amp,0]);
 
 	~c1.autogui;
@@ -143,10 +143,10 @@ s.doWhenBooted({
 		~e.(2,\room, 0.5);
 		~e.(2,\damp, 0.01);
 		~e.(2,\mul, 2.0);
-		~e.(1,\hop,10);
-		~e.(2,\hop,10);
-		~e.(3,\hop,10);
-		~e.(4,\hop,10);
+		~e.(1,\hop,1);
+		~e.(2,\hop,1);
+		~e.(3,\hop,1);
+		~e.(4,\hop,1);
 		60.0.wait; // 2
 		"minute 2".postln;
 		"maybe scratch with the piezo".postln;
