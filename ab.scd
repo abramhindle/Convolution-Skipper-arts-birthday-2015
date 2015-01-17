@@ -3,10 +3,6 @@ s.boot;
 s.scope;
 s.freqscope;
 
-/*
-	mplayer --loop=0 --gapless-audio -ao jack:port=SuperCollider 07\ -\ Ennio\ Morricone\ -\ Man\ With\ A\ Harmonica.flac 
-
-*/
 
 
 s.doWhenBooted({
@@ -74,7 +70,7 @@ s.doWhenBooted({
       		~arr.do {|item,i|
       			Pen.use {
       				//Pen.rotate(0.2pi);
-      				Pen.color = Color.red(if(item > 0.01, {item+bright}, {0}), 1.0);
+      				Pen.color = Color.red(if(item > 0.01, {item+bright}, {0}).min(1.9), 1.0);
       				Pen.addRect(
       					Rect(width/n * (index + i) % width, 0, width/n+2, height);
       				);
@@ -88,7 +84,7 @@ s.doWhenBooted({
       				Pen.scale(2.5,2.5);
       				Pen.rotate(0.2pi);
       				if(item > 0.01, {
-      					Pen.color = Color.blue(item+bright, 1.0);
+      					Pen.color = Color.blue((item+bright).min(1.9), 1.0);
 						
       					Pen.addRect(
       						Rect(0,height/n * (index + i) % height, width,height/n/2+2);
@@ -122,10 +118,133 @@ s.doWhenBooted({
       		(1.0/60.0).wait;
       	}
 	}).play;
-      
 	
+	~cs = [~c1,~c2,~c3,~c4];
+	~e = {
+		|n,sym,val|
+		[n,sym,val].postln;
+		~cs[n-1].set(sym,val);
+	};
+	~tenminutes = Routine( {
+		"Timer Started!".postln;
+		~e.(1,\amp,0.5);
+		~e.(2,\amp, 1.0);
+		~e.(3,\amp, 0.0);
+		~e.(4,\amp, 0.0);
+		60.wait; // 1
+		"minute 1".postln;
+		~e.(1,\dur,0.1);
+		~e.(1,\rate,30);
+		~e.(2,\dur,0.4);
+		~e.(2,\rate,30);
+		~e.(2,\mix, 0.1);
+		~e.(2,\room, 0.5);
+		~e.(2,\damp, 0.01);
+		~e.(2,\mul, 2.0);
+		~e.(1,\hop,10);
+		~e.(2,\hop,10);
+		~e.(3,\hop,10);
+		~e.(4,\hop,10);
+		60.wait; // 2
+		"minute 2".postln;
+		~e.(2,\hop,-50);
+		~e.(2,\mix, 0.9);
+		~e.(2,\room, 0.9);
+		60.wait; // 3
+		"minute 3".postln;
+		~e.(1,\dur,0.4);
+		~e.(2,\dur,0.1);
+		~e.(1,\hop,100);
+		~e.(2,\hop,10);
+		60.wait; // 4
+		"minute 4".postln;
+		~e.(3,\amp, 1.0);
+		~e.(3,\hop, 10);
+		~e.(3,\dur, 0.3);
+		~e.(1,\amp, 0.25);
+		~e.(2,\amp, 0.25);
+		40.wait; // 5
+		20.do {|i|
+			~e.(4, \amp, i*0.5/20);
+			1.wait;
+		};
+		"minute 5".postln;
+		~e.(4,\hop, 100);
+		~e.(4,\dur,0.5);
+		~e.(4,\mix,0.9);
+		~e.(4,\room,0.9);
+		~e.(4,\damp,0.1);
+		~e.(4,\amp, 0.5);
+		~e.(2,\amp, 0.0);
+		60.wait; // 6
+		"minute 6".postln;
+		~e.(4,\hop,-10);
+		~e.(4,\freq,-2);
+		~e.(3,\hop,50);
+		~e.(4,\dur,0.05);
+		~e.(4,\rate,60);
+		~e.(3,\dur,0.05);
+		~e.(3,\rate,60);
+		~e.(1,\amp, 0.0);
+		60.wait; // 7
+		"minute 7".postln;
+		~e.(1,\amp, 0.26);
+		~e.(1,\mix, 0.9);
+		~e.(1,\mul, 2.0);
+		60.wait; // 8
+		"minute 8".postln;
+		~e.(1,\amp,0.5);
+		~e.(2,\amp,1.5);
+		~e.(3,\amp,0.5);
+		~e.(4,\amp,0.5);
+		60.wait; // 9
+		"minute 9".postln;
+		50.wait;
+		20.do { |i|
+			var amp = 1.0/(i*i+1.0);
+			//~e.(1,\amp,amp);
+			(2..4).do {|x| ~e.(x,\amp,amp) };
+			0.5.wait;
+		};
+		(2..4).do {|x| ~e.(x,\amp,0.0) };		
+		~e.(1,\dur,1.0);
+		~e.(1,\rate,10);
+		~e.(1,\hop,50);
+		~e.(1,\amp,0.5);
+		~e.(1,\freq,1.0);
+	});
 	
+	~mytimerui = {
+		var myrect = Rect(0, 0, 340, 30), clicked = false;
+		u = Window.new("Timer", myrect);
+		b = Button(u, myrect);
+        b.states_([
+            ["Start Timer", Color.red, Color.black],
+            ["End Timer", Color.red, Color.black],
+        ])
+        .action_({ arg butt;
+			if(clicked,
+				{ 
+					~tm.stop;
+					~tm.free; 
+					clicked = false; 
+				}, 
+				{ 
+					~tm = ~tenminutes.play;
+					butt.value.postln;
+					clicked = true;
+				});
+        });
+		u.layout_(GridLayout.rows([u]));
+		u.front;
+		u.refresh;
+	};
+	~mytimerui.();
 });
 
 
 
+/*
+	mplayer --loop=0 --gapless-audio -ao jack:port=SuperCollider 07\ -\ Ennio\ Morricone\ -\ Man\ With\ A\ Harmonica.flac 
+
+*/
